@@ -80,27 +80,14 @@ __kernel void propagate(const int patchHeight, const int patchWidth,
 	//compute intensitive part
 	dir = direction;
 	if (nff(y - dir, x, 0) + dir >= effectiveHeight || nff(y - dir, x, 0) + dir < 0)
-	{
 		topD = MAXINT;
-	}
 	else
-	{
-		int y2 = nff(y - dir, x, 0) + dir;
-		int x2 = nff(y - dir, x, 1);
-		// int offset = abs(y -)
-		topD = D(y, x, y2, x2);
-	}
+		topD = D(y, x, nff(y - dir, x, 0) + dir, nff(y - dir, x, 1));
 
 	if (nff(y, x - dir, 1) + dir >= effectiveWidth || nff(y, x - dir, 1) + dir < 0)
-	{
 		leftD = MAXINT;
-	}
 	else
-	{
-		int y2 = nff(y, x - dir, 0);
-		int x2 = nff(y, x - dir, 1) + dir;
-		leftD = D(y, x, y2, x2);
-	}
+		leftD = D(y, x, nff(y, x - dir, 0), nff(y, x - dir, 1) + dir);
 
 	dir = direction;
 	currentD = nff(y, x, 2);
