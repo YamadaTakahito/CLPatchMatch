@@ -85,15 +85,21 @@ __kernel void propagate(const int patchHeight, const int patchWidth,
 	}
 	else
 	{
-		topD = D(y, x, nff(y - dir, x, 0) + dir, nff(y - dir, x, 1));
+		int y2 = nff(y - dir, x, 0) + dir;
+		int x2 = nff(y - dir, x, 1);
+		// int offset = abs(y -)
+		topD = D(y, x, y2, x2);
 	}
+
 	if (nff(y, x - dir, 1) + dir >= effectiveWidth || nff(y, x - dir, 1) + dir < 0)
 	{
 		leftD = MAXINT;
 	}
 	else
 	{
-		leftD = D(y, x, nff(y, x - dir, 0), nff(y, x - dir, 1) + dir);
+		int y2 = nff(y, x - dir, 0);
+		int x2 = nff(y, x - dir, 1) + dir;
+		leftD = D(y, x, y2, x2);
 	}
 
 	dir = direction;
