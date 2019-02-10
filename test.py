@@ -16,10 +16,10 @@ PATCH_SIZE = 7
 
 files = ['bike_a.png', 'bike_b.png']
 imgs = []
-img = imageio.imread('bike_a.png')
+img = imageio.imread('bike_a.png') / 255
 # img = (img / 255).astype(np.float64)
 imgs.append(img.astype(np.float64))
-img = imageio.imread('bike_b.png')
+img = imageio.imread('bike_b.png') / 255
 # img = (img / 255).astype(np.float64)
 imgs.append(img.astype(np.float64))
 # imgs = [skimage.img_as_float(
@@ -74,26 +74,6 @@ for i in range(20):
                       inputBuf[1],
                       outputBuf)
 
-    # output_nnf = np.empty_like(nnf)
-    # cl.enqueue_copy(queue, output_nnf, outputBuf)
-    # nnf = output_nnf.copy()
-
-    #    '''
-    #     mf = cl.mem_flags
-    #     self.inputBuf = [cl.Buffer(
-    #         self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=self.img[i]) for i in [0, 1]]
-    #     self.outputBuf = cl.Buffer(
-    #         self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, self.nff.nbytes, hostbuf=self.nff)
-
-    #     self.program.propagate(self.queue, self.effectiveSize, None,
-    #                            numpy.int32(self.patchSize[0]),  # patchHeight
-    #                            numpy.int32(self.patchSize[1]),  # patchWidth
-    #                            numpy.int32(self.size[0]),  # height
-    #                            numpy.int32(self.size[1]),  # width
-    #                            numpy.int32(self.iteration),
-    #                            self.inputBuf[0],
-    #                            self.inputBuf[1],
-    #                            self.outputBuf)
-    #     c = numpy.empty_like(self.nff)
-    #     cl.enqueue_copy(self.queue, c, self.outputBuf)
-    #     self.nff = numpy.copy(c)
+    output_nnf = np.empty_like(nnf)
+    cl.enqueue_copy(queue, output_nnf, outputBuf)
+    nnf = output_nnf.copy()

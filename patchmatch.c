@@ -49,8 +49,20 @@ __kernel void randomfill(const int patchHeight, const int patchWidth,
 	int y = get_global_id(0);
 	int x = get_global_id(1);
 	int seed = y << 16 + x;
-	int ty = seed = nff(y, x, 0) = random(0, effectiveHeight, seed);
-	int tx = nff(y, x, 1) = random(0, effectiveWidth, seed);
+
+	int randY = y + 100;
+	int randX = x + 100;
+	if (randY > effectiveHeight)
+	{
+		randY = effectiveHeight;
+	}
+	if (randX > effectiveWidth)
+	{
+		randX = effectiveWidth;
+	}
+
+	int ty = seed = nff(y, x, 0) = random(10, randY, seed);
+	int tx = nff(y, x, 1) = random(10, randX, seed);
 	nff(y, x, 2) = D(y, x, ty, tx);
 }
 
@@ -78,16 +90,47 @@ __kernel void propagate(const int patchHeight, const int patchWidth,
 
 	double currentD, topD, leftD;
 	//compute intensitive part
+	double MIN_OFFSET = pow(10.0, 2.0);
+	double MAX_OFFSET = pow(100.0, 2.0);
+
 	dir = direction;
 	if (nff(y - dir, x, 0) + dir >= effectiveHeight || nff(y - dir, x, 0) + dir < 0)
+	{
 		topD = MAXINT;
+	}
 	else
-		topD = D(y, x, nff(y - dir, x, 0) + dir, nff(y - dir, x, 1));
+	{
+		int y2 = nff(y - dir, x, 0);
+		int x2 = nff(y - dir, x, 1);
+		double offset = pow((double)(x - x2), 2.0) + pow((double)(y - y2), 2.0);
+		if (offset >= MIN_OFFSET && offset <= MAX_OFFSET)
+		{
+			topD = D(y, x, y2 + dir, x2);
+		}
+		else
+		{
+			topD = MAXINT;
+		}
+	}
 
 	if (nff(y, x - dir, 1) + dir >= effectiveWidth || nff(y, x - dir, 1) + dir < 0)
+	{
 		leftD = MAXINT;
+	}
 	else
-		leftD = D(y, x, nff(y, x - dir, 0), nff(y, x - dir, 1) + dir);
+	{
+		int y2 = nff(y, x - dir, 0);
+		int x2 = nff(y, x - dir, 1);
+		double offset = pow((double)(x - x2), 2.0) + pow((double)(y - y2), 2.0);
+		if (offset >= MIN_OFFSET && offset <= MAX_OFFSET)
+		{
+			leftD = D(y, x, y2, x2 + dir);
+		}
+		else
+		{
+			leftD = MAXINT;
+		}
+	}
 
 	dir = direction;
 	currentD = nff(y, x, 2);
@@ -129,13 +172,17 @@ __kernel void propagate(const int patchHeight, const int patchWidth,
 
 		int targetX = seed = random(x1, x2, seed);
 		int targetY = seed = random(y1, y2, seed);
+		int offset = pow((double)(x - targetX), 2.0) + pow((double)(y - targetY), 2.0);
 
-		double newD = D(y, x, targetY, targetX);
-		if (newD < nff(y, x, 2))
+		if (offset >= MIN_OFFSET && offset <= MAX_OFFSET)
 		{
-			nff(y, x, 0) = targetY;
-			nff(y, x, 1) = targetX;
-			nff(y, x, 2) = newD;
+			double newD = D(y, x, targetY, targetX);
+			if (newD < nff(y, x, 2))
+			{
+				nff(y, x, 0) = targetY;
+				nff(y, x, 1) = targetX;
+				nff(y, x, 2) = newD;
+			}
 		}
 		w /= 2;
 		h /= 2;
